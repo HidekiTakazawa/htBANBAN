@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国語学習アプリ紹介</title>
+     <!-- PWA対応: manifest.json のリンク -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- PWA対応: テーマカラー -->
+    <meta name="theme-color" content="#333333">
+
+    <!-- PWA対応: iOS向け設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="中国語アプリ">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>アプリ使用マニュアル(3種)</h1>
+    </header>
+
+    <main id="app-list-container">
+        <!-- アプリ紹介セクションはここにJavaScriptで動的に生成されます -->
+    </main>
+
+    <footer>
+        <p>このアプリはバンバン！中国語作成者が運営しています。</p>
+    </footer>
+     <!-- サービスワーカーの登録スクリプト -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
