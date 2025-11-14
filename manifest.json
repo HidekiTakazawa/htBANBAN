@@ -1,7 +1,7 @@
 {
-  "name": "中国語学習アプリ紹介",
-  "short_name": "中国語アプリ",
-  "description": "中国語学習Webアプリを紹介するページです。",
+  "name": "バンバン中国語学習アプリ紹介",
+  "short_name": "バンバン紹介",
+  "description": "バンバン中国語学習Webアプリを紹介するページです。",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
