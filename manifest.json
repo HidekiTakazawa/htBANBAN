@@ -1,14 +1,14 @@
 {
-  "name": "私の中国語学習アプリコレクション",
+  "name": "中国語学習アプリ紹介",
   "short_name": "中国語アプリ",
-  "description": "自作の中国語学習Webアプリを紹介するページです。",
+  "description": "中国語学習Webアプリを紹介するページです。",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#333333",
   "icons": [
     {
-      "src": "icons/icon-192x192.png",
+      "src": "icons/paint-icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
