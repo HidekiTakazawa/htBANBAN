@@ -34,56 +34,62 @@
         新しいバージョンが利用可能です。
         <button id="update-button">更新</button>
     </div>
-    <!-- サービスワーカーの登録スクリプト -->
+    <!-- サービスワーカーの登録スクリプト (正しい修正版) -->
     <script>
         if ('serviceWorker' in navigator) {
-            let newWorker;
-
-            const showUpdateNotification = () => {
+            const showUpdateNotification = (registration) => {
                 const notification = document.getElementById('update-notification');
                 const updateButton = document.getElementById('update-button');
-                
-                // 複数回クリックイベントが登録されないように一度削除
+
+                // イベントリスナーの重複を防ぐ
                 const newUpdateButton = updateButton.cloneNode(true);
                 updateButton.parentNode.replaceChild(newUpdateButton, updateButton);
 
                 newUpdateButton.addEventListener('click', () => {
-                    if (newWorker) {
-                        newWorker.postMessage({ action: 'skipWaiting' });
+                    const waitingWorker = registration.waiting;
+                    if (waitingWorker) {
+                        // 新しいSWにskipWaitingを指示
+                        waitingWorker.postMessage({ action: 'skipWaiting' });
+
+                        // 新しいSWが有効化されるのを待つ
+                        waitingWorker.addEventListener('statechange', (e) => {
+                            if (e.target.state === 'activated') {
+                                // 新しいSWが有効になったので、ページをリロード
+                                window.location.reload();
+                            }
+                        });
                     }
                 });
                 notification.style.display = 'block';
             };
 
-            // ★★★ 修正: registerメソッドに { updateViaCache: 'none' } を追加 ★★★
-            navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    console.log('ServiceWorker registration successful:', reg);
+            const registerSW = async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' });
                     
-                    // 定期的に更新を確認する (オプションですが推奨)
-                    setInterval(() => {
-                        reg.update();
-                    }, 1000 * 60 * 60); // 1時間ごと
+                    // ページ読み込み時点ですでに待機中のSWがいる場合
+                    if (registration.waiting) {
+                        showUpdateNotification(registration);
+                        return;
+                    }
 
-                    reg.addEventListener('updatefound', () => {
-                        newWorker = reg.installing;
+                    // 稼働中に新しいSWがインストールされた場合
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                showUpdateNotification();
+                                showUpdateNotification(registration);
                             }
                         });
                     });
-                })
-                .catch(err => {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
 
-            let refreshing;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (refreshing) return;
-                window.location.reload();
-                refreshing = true;
-            });
+                } catch (error) {
+                    console.error('Service Worker registration failed:', error);
+                }
+            };
+
+            // ページが読み込まれた後にSWを登録
+            window.addEventListener('load', registerSW);
         }
     </script>
     <script src="script.js"></script>

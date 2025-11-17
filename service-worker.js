@@ -1,5 +1,5 @@
 // キャッシュするファイルの名前とバージョンを定義
-const CACHE_NAME = 'chinese-app-showcase-v12';
+const CACHE_NAME = 'chinese-app-showcase-v13';
 // キャッシュするファイルのリスト
 const urlsToCache = [
   './', // index.html を示す
@@ -27,6 +27,7 @@ self.addEventListener('install', (event) => {
   // self.skipWaiting(); 
 });
 // ★★★ 追加: メッセージを受け取ったら skipWaiting を実行するリスナー ★★★
+// messageイベントリスナーを拡張
 self.addEventListener('message', (event) => {
   if (event.data && event.data.action === 'skipWaiting') {
     self.skipWaiting();
