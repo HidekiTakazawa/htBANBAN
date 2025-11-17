@@ -1,6 +1,6 @@
 {
   "name": "バンバン中国語学習アプリ紹介",
-  "short_name": "バンバン紹介",
+  "short_name": "棒棒！メニュー",
   "description": "バンバン中国語学習Webアプリを紹介するページです。",
   "start_url": "./index.html",
   "display": "standalone",
