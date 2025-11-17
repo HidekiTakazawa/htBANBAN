@@ -1,5 +1,5 @@
 // キャッシュするファイルの名前とバージョンを定義
-const CACHE_NAME = 'chinese-app-showcase-v3';
+const CACHE_NAME = 'chinese-app-showcase-v4';
 // キャッシュするファイルのリスト
 const urlsToCache = [
   './', // index.html を示す
@@ -23,6 +23,8 @@ self.addEventListener('install', (event) => {
         return cache.addAll(urlsToCache);
       })
   );
+  // ★追加: 新しいサービスワーカーが待機状態に入ったらすぐに有効化を試みる
+  self.skipWaiting(); 
 });
 
 // 2. フェッチイベント（リクエストがあった場合）の処理
