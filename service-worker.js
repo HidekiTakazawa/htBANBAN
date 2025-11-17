@@ -1,5 +1,5 @@
 // キャッシュするファイルの名前とバージョンを定義
-const CACHE_NAME = 'chinese-app-showcase-v11';
+const CACHE_NAME = 'chinese-app-showcase-v12';
 // キャッシュするファイルのリスト
 const urlsToCache = [
   './', // index.html を示す
