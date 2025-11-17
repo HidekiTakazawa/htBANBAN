@@ -1,5 +1,5 @@
 // キャッシュするファイルの名前とバージョンを定義
-const CACHE_NAME = 'chinese-app-showcase-v5';
+const CACHE_NAME = 'chinese-app-showcase-v6';
 // キャッシュするファイルのリスト
 const urlsToCache = [
   './', // index.html を示す
@@ -24,7 +24,13 @@ self.addEventListener('install', (event) => {
       })
   );
   // ★追加: 新しいサービスワーカーが待機状態に入ったらすぐに有効化を試みる
-  self.skipWaiting(); 
+  // self.skipWaiting(); 
+});
+// ★★★ 追加: メッセージを受け取ったら skipWaiting を実行するリスナー ★★★
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'skipWaiting') {
+    self.skipWaiting();
+  }
 });
 
 // 2. フェッチイベント（リクエストがあった場合）の処理
