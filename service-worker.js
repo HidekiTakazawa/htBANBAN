@@ -1,5 +1,5 @@
 // キャッシュするファイルの名前とバージョンを定義
-const CACHE_NAME = 'chinese-app-showcase-v18';
+const CACHE_NAME = 'chinese-app-showcase-v19';
 // キャッシュするファイルのリスト
 const urlsToCache = [
   './', // index.html を示す
@@ -36,29 +36,37 @@ self.addEventListener('message', (event) => {
 
 // 2. フェッチイベント（リクエストがあった場合）の処理
 self.addEventListener('fetch', (event) => {
-  // ★★★ 追加: http/https プロトコル以外（chrome-extension:// など）のリクエストは無視する ★★★
-  if (!event.request.url.startsWith('http')) {
-    return; // 何もせず、通常のネットワークリクエストとして処理させる
+  // ★★★ ここからが重要な変更点 ★★★
+
+  // ナビゲーションリクエスト（ページの読み込み）の場合
+  if (event.request.mode === 'navigate') {
+    // 常にネットワークからの取得を優先する（ネットワークファースト戦略）
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // オフラインの場合はキャッシュから index.html を返す
+        return caches.match('./index.html');
+      })
+    );
+    return;
   }
 
-  // ★★★ 修正: 以前のコードを以下に置き換える ★★★
+  // ナビゲーションリクエスト以外（CSS, JS, 画像など）の場合
+  // キャッシュファースト戦略
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(event.request).then((response) => {
-        // キャッシュにヒットした場合、キャッシュから返す
-        if (response) {
-          return response;
+    caches.match(event.request).then((response) => {
+      // キャッシュにあればそれを返す
+      if (response) {
+        return response;
+      }
+      // キャッシュになければネットワークから取得し、キャッシュに追加
+      return fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
         }
-
-        // キャッシュにない場合、ネットワークにリクエストしにいく
-        return fetch(event.request).then((networkResponse) => {
-          // 正常に取得できた場合、レスポンスをキャッシュに追加してから返す
-          // 'basic' タイプのレスポンス（同一オリジンからのリクエスト）のみキャッシュする
-          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-            cache.put(event.request, networkResponse.clone());
-          }
-          return networkResponse;
-        });
+        return networkResponse;
       });
     })
   );

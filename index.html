@@ -19,7 +19,7 @@
 </head>
 <body>
     <header>
-        <h1>アプリ使用マニュアル(3種)</h1>
+        <h1>nアプリ使用マニュアル(3種)</h1>
     </header>
 
     <main id="app-list-container">
@@ -85,8 +85,11 @@
             let refreshing = false;
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 if (refreshing) return;
-                console.log('Controller changed. Reloading page.');
-                window.location.reload();
+                console.log('Controller changed. Forcing reload.');
+                // ★★★ window.location.reload(true) は非推奨になったため、
+                // ★★★ サービスワーカー側でのナビゲーションリクエスト制御が本命です。
+                // ★★★ そのため、この行は変更しませんが、重要性を再認識します。
+                window.location.reload(); 
                 refreshing = true;
             });
 
