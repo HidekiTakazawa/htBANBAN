@@ -1,5 +1,5 @@
 // キャッシュするファイルの名前とバージョンを定義
-const CACHE_NAME = 'chinese-app-showcase-v8';
+const CACHE_NAME = 'chinese-app-showcase-v9';
 // キャッシュするファイルのリスト
 const urlsToCache = [
   './', // index.html を示す
@@ -67,7 +67,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// 3. 古いキャッシュの削除
+// 3. 古いキャッシュの削除とクライアントの制御
 self.addEventListener('activate', (event) => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -75,10 +75,15 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            // ホワイトリストに含まれない古いキャッシュを削除
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      // ★★★ 追加: すべてのクライアント（タブやPWAウィンドウ）のコントロールを即座に要求する ★★★
+      console.log('Service Worker activating and claiming clients.');
+      return self.clients.claim(); 
     })
   );
 });

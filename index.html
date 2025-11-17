@@ -37,32 +37,37 @@
     <!-- サービスワーカーの登録スクリプト -->
     <script>
         if ('serviceWorker' in navigator) {
-            let newWorker; // 新しいサービスワーカーを保持する変数
+            let newWorker;
 
             const showUpdateNotification = () => {
                 const notification = document.getElementById('update-notification');
                 const updateButton = document.getElementById('update-button');
                 
-                updateButton.addEventListener('click', () => {
-                    // 新しいサービスワーカーにメッセージを送り、ページを再読み込みさせる
+                // 複数回クリックイベントが登録されないように一度削除
+                const newUpdateButton = updateButton.cloneNode(true);
+                updateButton.parentNode.replaceChild(newUpdateButton, updateButton);
+
+                newUpdateButton.addEventListener('click', () => {
                     if (newWorker) {
                         newWorker.postMessage({ action: 'skipWaiting' });
                     }
-                    // ★注: service-worker.jsにskipWaiting()を追加した場合、以下の行は不要なことが多いですが、
-                    // ユーザーがクリックしたタイミングで確実に更新するために残しておいても良いです。
                 });
                 notification.style.display = 'block';
             };
 
-            navigator.serviceWorker.register('./service-worker.js')
+            // ★★★ 修正: registerメソッドに { updateViaCache: 'none' } を追加 ★★★
+            navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' })
                 .then(reg => {
                     console.log('ServiceWorker registration successful:', reg);
                     
+                    // 定期的に更新を確認する (オプションですが推奨)
+                    setInterval(() => {
+                        reg.update();
+                    }, 1000 * 60 * 60); // 1時間ごと
+
                     reg.addEventListener('updatefound', () => {
-                        // 新しいサービスワーカーが見つかった
                         newWorker = reg.installing;
                         newWorker.addEventListener('statechange', () => {
-                            // 新しいサービスワーカーがインストールされ、待機状態になった
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                                 showUpdateNotification();
                             }
@@ -73,7 +78,6 @@
                     console.log('ServiceWorker registration failed: ', err);
                 });
 
-            // ページがリロードされたときに新しいサービスワーカーが有効になるようにする
             let refreshing;
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 if (refreshing) return;
