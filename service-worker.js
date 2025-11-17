@@ -1,5 +1,5 @@
 // キャッシュするファイルの名前とバージョンを定義
-const CACHE_NAME = 'chinese-app-showcase-v10';
+const CACHE_NAME = 'chinese-app-showcase-v11';
 // キャッシュするファイルのリスト
 const urlsToCache = [
   './', // index.html を示す
@@ -34,36 +34,32 @@ self.addEventListener('message', (event) => {
 });
 
 // 2. フェッチイベント（リクエストがあった場合）の処理
-// ネットワークからの取得を試み、失敗した場合にキャッシュから返す（ネットワークファースト）
-// オフライン対応を優先する場合は、キャッシュファースト戦略もあります。
 self.addEventListener('fetch', (event) => {
+  // ★★★ 追加: http/https プロトコル以外（chrome-extension:// など）のリクエストは無視する ★★★
+  if (!event.request.url.startsWith('http')) {
+    return; // 何もせず、通常のネットワークリクエストとして処理させる
+  }
+
+  // ★★★ 修正: 以前のコードを以下に置き換える ★★★
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.match(event.request).then((response) => {
         // キャッシュにヒットした場合、キャッシュから返す
         if (response) {
           return response;
         }
 
         // キャッシュにない場合、ネットワークにリクエストしにいく
-        return fetch(event.request).then(
-          (networkResponse) => {
-            // 正常に取得できた場合、レスポンスをキャッシュに追加してから返す
-            if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-              return networkResponse;
-            }
-
-            // レスポンスをクローンして片方をキャッシュに、もう片方をブラウザに返す
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return networkResponse;
+        return fetch(event.request).then((networkResponse) => {
+          // 正常に取得できた場合、レスポンスをキャッシュに追加してから返す
+          // 'basic' タイプのレスポンス（同一オリジンからのリクエスト）のみキャッシュする
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            cache.put(event.request, networkResponse.clone());
           }
-        );
-      })
+          return networkResponse;
+        });
+      });
+    })
   );
 });
 
